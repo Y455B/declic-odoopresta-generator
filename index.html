@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Déclic — Générateur de Prestations</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0A0A0A;
+    --white: #F5F2EE;
+    --red: #D63031;
+    --red-dark: #A82323;
+    --gray-1: #1A1A1A;
+    --gray-2: #2A2A2A;
+    --gray-3: #444;
+    --gray-4: #888;
+    --gray-5: #BBB;
+    --accent: #E17055;
+    --green: #00B894;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(214,48,49,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(225,112,85,0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* Header */
+  header {
+    padding: 48px 0 56px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .logo-block h1 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 6px;
+  }
+
+  .logo-block p {
+    font-size: 12px;
+    color: var(--gray-4);
+    letter-spacing: 0.05em;
+    font-weight: 300;
+  }
+
+  .badge {
+    background: var(--gray-2);
+    border: 1px solid var(--gray-3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 11px;
+    color: var(--gray-4);
+    letter-spacing: 0.08em;
+    font-family: var(--font-display);
+    font-weight: 600;
+    white-space: nowrap;
+    margin-top: 4px;
+  }
+
+  /* Section title */
+  .section-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gray-4);
+    margin-bottom: 20px;
+  }
+
+  /* Form card */
+  .form-card {
+    background: var(--gray-1);
+    border: 1px solid var(--gray-2);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 24px;
+  }
+
+  /* Grid selectors */
+  .selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .selector-grid.two-col {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+
+  .chip {
+    background: var(--gray-2);
+    border: 1.5px solid var(--gray-3);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--red);
+    opacity: 0;
+    transition: opacity 0.18s;
+    border-radius: 8px;
+  }
+
+  .chip:hover { border-color: var(--gray-4); transform: translateY(-1px); }
+
+  .chip.active {
+    border-color: var(--red);
+    background: rgba(214,48,49,0.12);
+  }
+
+  .chip.active::before { opacity: 0; }
+
+  .chip-icon {
+    font-size: 18px;
+    margin-bottom: 6px;
+    display: block;
+    position: relative;
+  }
+
+  .chip-label {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white);
+    position: relative;
+    display: block;
+    line-height: 1.3;
+  }
+
+  .chip-sub {
+    font-size: 10px;
+    color: var(--gray-4);
+    position: relative;
+    display: block;
+    margin-top: 2px;
+    font-weight: 300;
+  }
+
+  /* Row layout */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    header { flex-direction: column; }
+    .form-card { padding: 24px; }
+  }
+
+  .field-block { display: flex; flex-direction: column; gap: 8px; }
+
+  label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-4);
+    font-family: var(--font-display);
+  }
+
+  input[type="text"], textarea, select {
+    background: var(--gray-2);
+    border: 1.5px solid var(--gray-3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 400;
+    transition: border-color 0.18s;
+    outline: none;
+    width: 100%;
+  }
+
+  input[type="text"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--red);
+  }
+
+  textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+
+  select option { background: var(--gray-2); }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--gray-2);
+    margin: 28px 0;
+  }
+
+  /* Generate button */
+  .btn-generate {
+    width: 100%;
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    padding: 18px 32px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-generate:hover { background: var(--red-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(214,48,49,0.3); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { background: var(--gray-3); cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .btn-icon { font-size: 18px; }
+
+  /* Loading */
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Result card */
+  .result-card {
+    background: var(--gray-1);
+    border: 1px solid var(--gray-2);
+    border-radius: 16px;
+    padding: 36px;
+    display: none;
+    animation: fadeUp 0.35s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-card.visible { display: block; }
+
+  /* Result fields */
+  .result-field {
+    margin-bottom: 20px;
+  }
+
+  .result-field:last-of-type { margin-bottom: 0; }
+
+  .result-label {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gray-4);
+    margin-bottom: 8px;
+  }
+
+  .result-value {
+    background: var(--gray-2);
+    border: 1.5px solid var(--gray-3);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--white);
+    position: relative;
+    word-break: break-word;
+  }
+
+  .result-value.ref-value {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--red);
+    border-color: rgba(214,48,49,0.3);
+    background: rgba(214,48,49,0.06);
+  }
+
+  .result-value.name-value {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  /* Copy buttons */
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--gray-3);
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 11px;
+    color: var(--gray-5);
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { background: var(--red); color: white; }
+  .copy-btn.copied { background: var(--green); color: white; }
+
+  .result-value { position: relative; padding-right: 72px; }
+
+  /* Copy all */
+  .btn-copy-all {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid var(--gray-3);
+    border-radius: 12px;
+    padding: 14px;
+    color: var(--gray-4);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.18s;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-copy-all:hover { border-color: var(--white); color: var(--white); }
+
+  /* Variants section */
+  .variants-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  @media (max-width: 600px) {
+    .variants-grid { grid-template-columns: 1fr; }
+  }
+
+  .variant-chip {
+    background: var(--gray-2);
+    border: 1.5px solid var(--gray-3);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .variant-chip:hover { border-color: var(--accent); background: rgba(225,112,85,0.08); }
+
+  .variant-text {
+    font-size: 12px;
+    color: var(--gray-5);
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+
+  /* Error */
+  .error-msg {
+    background: rgba(214,48,49,0.1);
+    border: 1px solid rgba(214,48,49,0.3);
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: #FF7675;
+    font-size: 13px;
+    margin-top: 16px;
+    display: none;
+  }
+
+  .error-msg.visible { display: block; }
+
+  /* Counter */
+  .counter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-top: 1px solid var(--gray-2);
+    margin-top: 24px;
+  }
+
+  .counter-bar span {
+    font-size: 12px;
+    color: var(--gray-4);
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+
+  .counter-num {
+    color: var(--red) !important;
+    font-size: 20px !important;
+  }
+
+  /* Required indicator */
+  .req { color: var(--red); margin-left: 3px; }
+
+  /* Pack toggle */
+  .pack-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--gray-2);
+    border: 1.5px solid var(--gray-3);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.18s;
+    margin-bottom: 28px;
+    user-select: none;
+  }
+
+  .pack-toggle:hover { border-color: var(--accent); }
+  .pack-toggle.active { border-color: var(--accent); background: rgba(225,112,85,0.1); }
+
+  .toggle-switch {
+    width: 36px;
+    height: 20px;
+    background: var(--gray-3);
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.18s;
+    flex-shrink: 0;
+  }
+
+  .pack-toggle.active .toggle-switch { background: var(--accent); }
+
+  .toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.18s;
+  }
+
+  .pack-toggle.active .toggle-knob { transform: translateX(16px); }
+
+  .toggle-label {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .toggle-sub {
+    font-size: 11px;
+    color: var(--gray-4);
+    font-weight: 300;
+  }
+
+  /* History */
+  .history-section { margin-top: 48px; }
+
+  .history-item {
+    background: var(--gray-1);
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .history-ref {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: 0.1em;
+    min-width: 120px;
+  }
+
+  .history-name {
+    font-size: 13px;
+    color: var(--white);
+    flex: 1;
+    font-weight: 500;
+  }
+
+  .history-copy {
+    background: var(--gray-2);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: var(--gray-4);
+    font-size: 11px;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 600;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .history-copy:hover { background: var(--red); color: white; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="logo-block">
+      <h1>Déclic Agency</h1>
+      <p>Générateur de prestations — Catalogue interne</p>
+    </div>
+    <div class="badge">🛠 Outil interne v1.3</div>
+  </header>
+
+  <!-- FORM CARD -->
+  <div class="form-card">
+    <div class="section-label">1. Pôle métier<span class="req">*</span></div>
+    <div class="selector-grid" id="pole-grid">
+      <div class="chip" data-group="pole" data-value="DIGI">
+        <span class="chip-icon">📱</span>
+        <span class="chip-label">Digital</span>
+        <span class="chip-sub">SMM, Dev, RP, Content</span>
+      </div>
+      <div class="chip" data-group="pole" data-value="CREA">
+        <span class="chip-icon">🎨</span>
+        <span class="chip-label">Créa</span>
+        <span class="chip-sub">Charte, Exécution visuelle</span>
+      </div>
+      <div class="chip" data-group="pole" data-value="PROD">
+        <span class="chip-icon">🎬</span>
+        <span class="chip-label">Production</span>
+        <span class="chip-sub">Events, Technique, Média</span>
+      </div>
+      <div class="chip" data-group="pole" data-value="STRAT">
+        <span class="chip-icon">🧠</span>
+        <span class="chip-label">Stratégie</span>
+        <span class="chip-sub">Conseil, Audit, Plan</span>
+      </div>
+    </div>
+
+    <div class="section-label">2. Sous-type<span class="req">*</span></div>
+    <div class="selector-grid two-col" id="subtype-grid">
+      <!-- Dynamic based on pole -->
+    </div>
+
+    <div class="section-label">3. Mode de facturation<span class="req">*</span></div>
+    <div class="selector-grid" id="billing-grid">
+      <div class="chip" data-group="billing" data-value="F">
+        <span class="chip-icon">📦</span>
+        <span class="chip-label">Forfait</span>
+      </div>
+      <div class="chip" data-group="billing" data-value="H">
+        <span class="chip-icon">⏱</span>
+        <span class="chip-label">Heure</span>
+      </div>
+      <div class="chip" data-group="billing" data-value="J">
+        <span class="chip-icon">📅</span>
+        <span class="chip-label">Jour</span>
+      </div>
+      <div class="chip" data-group="billing" data-value="P">
+        <span class="chip-icon">🎯</span>
+        <span class="chip-label">Performance</span>
+      </div>
+    </div>
+
+    <!-- Pack toggle -->
+    <div class="pack-toggle" id="pack-toggle">
+      <div class="toggle-switch"><div class="toggle-knob"></div></div>
+      <div>
+        <div class="toggle-label">📦 Packager plusieurs prestations</div>
+        <div class="toggle-sub">Activer pour créer un forfait combiné (ex: Pack Lancement, Offre Full Digital…)</div>
+      </div>
+    </div>
+
+    <div id="pack-extras" style="display:none;">
+      <div class="form-row">
+        <div class="field-block">
+          <label>Pôles inclus dans le pack</label>
+          <input type="text" id="pack-poles" placeholder="ex: DIGI + CREA + STRAT" />
+        </div>
+        <div class="field-block">
+          <label>Nom du pack (libre)</label>
+          <input type="text" id="pack-name" placeholder="ex: Lancement, Full Brand…" />
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section-label">4. Contexte de la prestation</div>
+    <div class="form-row">
+      <div class="field-block">
+        <label>Intitulé approximatif</label>
+        <input type="text" id="input-title" placeholder="ex: gestion réseaux sociaux mensuelle" />
+      </div>
+      <div class="field-block">
+        <label>Secteur client (optionnel)</label>
+        <input type="text" id="input-sector" placeholder="ex: immobilier, retail, B2B…" />
+      </div>
+    </div>
+    <div class="field-block" style="margin-bottom:28px">
+      <label>Précisions supplémentaires (optionnel)</label>
+      <textarea id="input-notes" placeholder="Durée, livrables spécifiques, contexte particulier…"></textarea>
+    </div>
+
+    <button class="btn-generate" id="btn-generate" onclick="generatePresta()">
+      <span class="btn-icon">✦</span>
+      <span id="btn-text">Générer la prestation</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+
+    <div class="error-msg" id="error-msg"></div>
+  </div>
+
+  <!-- RESULT CARD -->
+  <div class="result-card" id="result-card">
+    <div class="section-label">Résultat généré</div>
+
+    <div class="result-field">
+      <div class="result-label">Référence interne (Odoo)</div>
+      <div class="result-value ref-value" id="result-ref">
+        —
+        <button class="copy-btn" onclick="copyField('result-ref')">Copier</button>
+      </div>
+    </div>
+
+    <div class="result-field">
+      <div class="result-label">Nom produit (affiché sur devis)</div>
+      <div class="result-value name-value" id="result-name">
+        —
+        <button class="copy-btn" onclick="copyField('result-name')">Copier</button>
+      </div>
+    </div>
+
+    <div class="result-field">
+      <div class="result-label">Description interne</div>
+      <div class="result-value" id="result-desc">
+        —
+        <button class="copy-btn" onclick="copyField('result-desc')">Copier</button>
+      </div>
+    </div>
+
+    <div class="result-field">
+      <div class="result-label">Description courte (devis client)</div>
+      <div class="result-value" id="result-short">
+        —
+        <button class="copy-btn" onclick="copyField('result-short')">Copier</button>
+      </div>
+    </div>
+
+    <button class="btn-copy-all" onclick="copyAll()">
+      <span>⊕</span> Tout copier (format Odoo)
+    </button>
+
+    <div style="margin-top:28px">
+      <div class="section-label">Variantes suggérées</div>
+      <div class="variants-grid" id="variants-grid"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-section" id="history-section" style="display:none">
+    <div class="section-label">Historique de session</div>
+    <div id="history-list"></div>
+    <div class="counter-bar">
+      <span>Prestations générées</span>
+      <span class="counter-num" id="counter">0</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const state = {
+  pole: null,
+  subtype: null,
+  billing: null,
+  isPack: false,
+  counter: 0,
+  history: []
+};
+
+// ─── Subtypes per pole ───────────────────────────────────────────────────────
+const subtypes = {
+  DIGI: [
+    { value: 'SMM', label: 'Social Media', icon: '📲' },
+    { value: 'CONT', label: 'Content', icon: '✍️' },
+    { value: 'DEV', label: 'Développement', icon: '💻' },
+    { value: 'RP', label: 'Relations Presse', icon: '📣' },
+    { value: 'MEDIA', label: 'Média / Ads', icon: '📡' },
+    { value: 'DATA', label: 'Data & Analytics', icon: '📊' },
+  ],
+  CREA: [
+    { value: 'CHARTE', label: 'Charte visuelle', icon: '🎨' },
+    { value: 'EXE', label: 'Exécution créa', icon: '🖼️' },
+    { value: 'MOTION', label: 'Motion / Vidéo', icon: '🎞️' },
+    { value: 'PRINT', label: 'Print', icon: '🖨️' },
+  ],
+  PROD: [
+    { value: 'EVT', label: 'Événementiel', icon: '🎪' },
+    { value: 'TECH', label: 'Technique', icon: '🔧' },
+    { value: 'MEDIA', label: 'Production Média', icon: '🎥' },
+    { value: 'LOG', label: 'Logistique', icon: '📦' },
+  ],
+  STRAT: [
+    { value: 'AUDIT', label: 'Audit', icon: '🔍' },
+    { value: 'PLAN', label: 'Planification', icon: '🗺️' },
+    { value: 'CONS', label: 'Conseil', icon: '💡' },
+    { value: 'RECH', label: 'Recherche', icon: '📚' },
+  ],
+};
+
+// ─── Chip interaction ─────────────────────────────────────────────────────────
+document.querySelectorAll('[data-group]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const group = chip.dataset.group;
+    document.querySelectorAll(`[data-group="${group}"]`).forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state[group] = chip.dataset.value;
+    if (group === 'pole') renderSubtypes(chip.dataset.value);
+  });
+});
+
+function renderSubtypes(pole) {
+  const grid = document.getElementById('subtype-grid');
+  state.subtype = null;
+  grid.innerHTML = subtypes[pole].map(st => `
+    <div class="chip" data-group="subtype" data-value="${st.value}" onclick="selectSubtype(this, '${st.value}')">
+      <span class="chip-icon">${st.icon}</span>
+      <span class="chip-label">${st.label}</span>
+    </div>
+  `).join('');
+}
+
+function selectSubtype(el, value) {
+  document.querySelectorAll('[data-group="subtype"]').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  state.subtype = value;
+}
+
+// ─── Pack toggle ──────────────────────────────────────────────────────────────
+document.getElementById('pack-toggle').addEventListener('click', function() {
+  state.isPack = !state.isPack;
+  this.classList.toggle('active', state.isPack);
+  document.getElementById('pack-extras').style.display = state.isPack ? 'block' : 'none';
+});
+
+// ─── Generate ─────────────────────────────────────────────────────────────────
+async function generatePresta() {
+  // Validation
+  if (!state.pole) return showError('Sélectionne un pôle métier.');
+  if (!state.subtype && !state.isPack) return showError('Sélectionne un sous-type.');
+  if (!state.billing) return showError('Sélectionne un mode de facturation.');
+
+  hideError();
+  setLoading(true);
+
+  const pole = state.pole;
+  const subtype = state.isPack ? 'PACK' : state.subtype;
+  const billing = state.billing;
+  const titleInput = document.getElementById('input-title').value.trim();
+  const sector = document.getElementById('input-sector').value.trim();
+  const notes = document.getElementById('input-notes').value.trim();
+  const packPoles = document.getElementById('pack-poles')?.value.trim() || '';
+  const packName = document.getElementById('pack-name')?.value.trim() || '';
+
+  // Build reference (sequential)
+  state.counter++;
+  const num = String(state.counter).padStart(3, '0');
+  const ref = state.isPack
+    ? `PACK-${packName.toUpperCase().replace(/\s+/g,'-') || 'MULTI'}-${num}-${billing}`
+    : `${pole}-${subtype}-${num}-${billing}`;
+
+  const prompt = `Tu es un consultant senior en agence de communication. Tu travailles pour Déclic Agency, agence marocaine spécialisée en digital, créa, stratégie et production événementielle.
+
+Génère une fiche prestation professionnelle pour leur catalogue Odoo.
+
+CONTEXTE :
+- Pôle : ${pole}
+- Sous-type : ${subtype}
+- Facturation : ${billing === 'F' ? 'Forfait' : billing === 'H' ? 'À l\'heure' : billing === 'J' ? 'À la journée' : 'À la performance'}
+${state.isPack ? `- TYPE : PACK combiné (${packPoles || 'multi-pôles'}) — ${packName || 'forfait groupé'}` : ''}
+${titleInput ? `- Intitulé approximatif : ${titleInput}` : ''}
+${sector ? `- Secteur client cible : ${sector}` : ''}
+${notes ? `- Précisions : ${notes}` : ''}
+
+RÈGLES STRICTES :
+1. Nom produit : court (3-5 mots max), professionnel, pas de jargon, lisible sur un devis client marocain. PAS de codes ou références dedans.
+2. Description interne (usage Odoo, équipe) : 2-3 phrases techniques, précises, avec livrables attendus.
+3. Description courte client (devis) : 1 phrase max, valorisante, orientée bénéfice client.
+4. Variantes : 2 variantes alternatives de nom produit (même prestation, angle différent).
+
+Réponds UNIQUEMENT en JSON strict, sans markdown, sans explication :
+{
+  "nom": "...",
+  "description_interne": "...",
+  "description_client": "...",
+  "variantes": ["...", "..."]
+}`;
+
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    const rawText = await response.text();
+    console.log('Status:', response.status);
+    console.log('Raw:', rawText.substring(0, 400));
+
+    let data;
+    try { data = JSON.parse(rawText); }
+    catch(e) { throw new Error('Réponse invalide (HTTP ' + response.status + '): ' + rawText.substring(0, 200)); }
+
+    if (!response.ok || data.error) throw new Error(data.error || data.detail || 'HTTP ' + response.status);
+
+    const raw = data.content?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    // Display result
+    setText('result-ref', ref);
+    setText('result-name', parsed.nom);
+    setText('result-desc', parsed.description_interne);
+    setText('result-short', parsed.description_client);
+
+    // Variants
+    const vGrid = document.getElementById('variants-grid');
+    vGrid.innerHTML = (parsed.variantes || []).map((v, i) => `
+      <div class="variant-chip" onclick="applyVariant('${v.replace(/'/g, "\\'")}')">
+        <span class="variant-text">${v}</span>
+        <span style="color:var(--gray-4);font-size:11px">↩ Appliquer</span>
+      </div>
+    `).join('');
+
+    // Show result
+    document.getElementById('result-card').classList.add('visible');
+
+    // Add to history
+    addToHistory(ref, parsed.nom);
+
+    // Scroll to result
+    document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (err) {
+    showError(err.message || 'Erreur de génération. Vérifie ta connexion et réessaie.');
+    console.error(err);
+  }
+
+  setLoading(false);
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function setText(id, value) {
+  const el = document.getElementById(id);
+  const btn = el.querySelector('.copy-btn');
+  el.childNodes[0].textContent = value + ' ';
+  // keep button
+}
+
+function applyVariant(name) {
+  document.getElementById('result-name').childNodes[0].textContent = name + ' ';
+}
+
+function copyField(id) {
+  const el = document.getElementById(id);
+  const text = el.childNodes[0].textContent.trim();
+  navigator.clipboard.writeText(text);
+  const btn = el.querySelector('.copy-btn');
+  btn.textContent = '✓ Copié';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('copied'); }, 2000);
+}
+
+function copyAll() {
+  const ref = document.getElementById('result-ref').childNodes[0].textContent.trim();
+  const name = document.getElementById('result-name').childNodes[0].textContent.trim();
+  const desc = document.getElementById('result-desc').childNodes[0].textContent.trim();
+  const short = document.getElementById('result-short').childNodes[0].textContent.trim();
+  const text = `RÉFÉRENCE: ${ref}\nNOM PRODUIT: ${name}\nDESCRIPTION INTERNE: ${desc}\nDESCRIPTION CLIENT: ${short}`;
+  navigator.clipboard.writeText(text);
+  const btn = document.querySelector('.btn-copy-all');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span>✓</span> Copié dans le presse-papier';
+  setTimeout(() => { btn.innerHTML = orig; }, 2500);
+}
+
+function addToHistory(ref, name) {
+  state.history.unshift({ ref, name });
+  document.getElementById('history-section').style.display = 'block';
+  document.getElementById('counter').textContent = state.history.length;
+  const list = document.getElementById('history-list');
+  list.innerHTML = state.history.slice(0, 8).map((item, i) => `
+    <div class="history-item">
+      <span class="history-ref">${item.ref}</span>
+      <span class="history-name">${item.name}</span>
+      <button class="history-copy" onclick="navigator.clipboard.writeText('${item.ref} — ${item.name.replace(/'/g,"\\'")}'); this.textContent='✓ Copié'; setTimeout(()=>this.textContent='Copier',1500)">Copier</button>
+    </div>
+  `).join('');
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function hideError() {
+  document.getElementById('error-msg').classList.remove('visible');
+}
+
+function setLoading(loading) {
+  const btn = document.getElementById('btn-generate');
+  const text = document.getElementById('btn-text');
+  const spinner = document.getElementById('spinner');
+  btn.disabled = loading;
+  text.textContent = loading ? 'Génération en cours…' : 'Générer la prestation';
+  spinner.style.display = loading ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
